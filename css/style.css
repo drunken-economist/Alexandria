@@ -26,5 +26,13 @@
 .histogram {
 	fill: darkblue;
 	stroke: none;
-	width: 10px;
+}
+
+.labels {
+	stroke: none;
+	fill: steelblue;
+	font-family: Courier New;
+	font-variant: small-caps;
+	font-size: 12px;
+}
 }

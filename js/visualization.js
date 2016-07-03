@@ -1,11 +1,16 @@
+var width = window.innerWidth;
+var height = window.innerHeight;
 
 var canvas = d3.select("body")
 				.append("svg")
-				.attr("width", 1500)
-				.attr("height", 1500);
+				.attr("width", width)
+				.attr("height", height);
+
 function visualize() {
 	d3.json("data/comment_data.json", function(response){ //reading dummy data file for now to avoid costly API calls in testing
+		duration = 2000; //the duration of the transitions
 		comments = response.rows
+		console.log("version 2")
 		aggregateData(comments);
 		addHeaders();
 		addHistogram(byDate);
@@ -23,7 +28,7 @@ function utcToDate(timestamp){
 function aggregateData(comments){
 	bySubreddit = {}
 	byPost = {}
-	byDate = []
+	byDate = {}
 	totalLength = 0
 	totalScore = 0
 
@@ -69,10 +74,9 @@ function aggregateData(comments){
 function addHeaders(){
 	anchorX = 20;
 	anchorY = 50;
-	xSpacing = 250;
+	xSpacing = width/3-50;
 	yLabelSpacing=20;
 	yLineSpacing = 100;
-	duration = 2000; //the duration of the "counting" transition
 
 	x = anchorX;
 	y = anchorY;
@@ -137,28 +141,45 @@ function addHeaders(){
 			.text("total length")	
 }
 
-function addHistogram(data){
-	debug=data;
-	anchorX = 20;
-	anchorY = 200;
-	xSpacing = 15;
-
+function addHistogram(byDate){
+	anchorX = 40;
+	anchorY = 350;
+	yScale = 20;
 	y = anchorY;
 	x = anchorX;
+
+	dates = Object.keys(byDate);
+	xSpacing = width/dates.length*0.9;
+	dates.sort()
+	counts = [];
+
+	for (i=0; i < dates.length; i++){
+		date = dates[i]
+		count = byDate[date]["count"]
+		counts.push(count);
+	};
 	canvas.selectAll("rect")
-		.data(data)
+		.data(counts)
 		.enter()
 			.append("rect")
+			.attr('width', xSpacing-4)
 			.classed("histogram", true)
-			.attr('height', function(d){
-				console.log(d);
-				return d.count;
+			.attr('y', function(d){
+				return y;
 			})
-			.attr('y', y)
 			.attr('x', function(d,i){
-				return i * xSpacing;
-			});
-};
+				return i * xSpacing+anchorX;
+			})
+			.attr('height',0)
+			.transition()
+				.duration(duration)
+				.attr('height', function(d){
+					return d*yScale;
+				})
+				.attr('y', function(d){
+					return y-(d*yScale);
+				})
+}
 
 function tweenText( newValue ) {
     return function() {

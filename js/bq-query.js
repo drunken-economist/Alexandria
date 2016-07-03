@@ -9,6 +9,9 @@ var config = {
 
 var comment_data;
 
+var x = document.createElement("INPUT");
+x.setAttribute("type", "text");
+
 function runQuery() {
  var request = gapi.client.bigquery.jobs.query({
     'projectId': project_id,
