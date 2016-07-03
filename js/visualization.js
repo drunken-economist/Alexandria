@@ -1,16 +1,15 @@
-// var data = results.result.rows;
+
 var canvas = d3.select("body")
 				.append("svg")
 				.attr("width", 1500)
 				.attr("height", 1500);
 function visualize() {
-	d3.json("data/comment_data.json", function(response){
+	d3.json("data/comment_data.json", function(response){ //reading dummy data file for now to avoid costly API calls in testing
 		comments = response.rows
 		aggregateData(comments);
 		addHeaders();
-		addTimeSeries();
-	}
-	);
+		addHistogram(byDate);
+	});
 }
 
 function utcToDate(timestamp){
@@ -24,17 +23,17 @@ function utcToDate(timestamp){
 function aggregateData(comments){
 	bySubreddit = {}
 	byPost = {}
-	byDate = {}
+	byDate = []
 	totalLength = 0
 	totalScore = 0
 
 	totalComments = Object.keys(comments).length
 	//creates a few aggregations in JSON objects: 
 	//sr_name:num_comments, post:num_comments
-	//day:num_comments. Also sums length
+	//day:[num_comments,sum score, sum length]
+	//also sums score and length globally
 	for (i=0; i < Object.keys(comments).length; i++){
 		thisDate = utcToDate(comments[i].f[0].v);
-		console.log(thisDate);
 		thisPost = comments[i].f[2].v
 		thisSr = comments[i].f[3].v;
 		thisScore = parseInt(comments[i].f[4].v)
@@ -138,17 +137,33 @@ function addHeaders(){
 			.text("total length")	
 }
 
-function addTimeSeries(){
-	canvas.append("rect");
+function addHistogram(data){
+	debug=data;
+	anchorX = 20;
+	anchorY = 200;
+	xSpacing = 15;
 
-}
+	y = anchorY;
+	x = anchorX;
+	canvas.selectAll("rect")
+		.data(data)
+		.enter()
+			.append("rect")
+			.classed("histogram", true)
+			.attr('height', function(d){
+				console.log(d);
+				return d.count;
+			})
+			.attr('y', y)
+			.attr('x', function(d,i){
+				return i * xSpacing;
+			});
+};
 
 function tweenText( newValue ) {
     return function() {
-      var currentValue = this.textContent;
-      
+      var currentValue = this.textContent;   
       var i = d3.interpolateRound( currentValue, newValue );
-      
       return function(t) {
         this.textContent = i(t);
       };

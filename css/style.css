@@ -22,3 +22,9 @@
 	font-variant: small-caps;
 	font-size: 36px;
 }
+
+.histogram {
+	fill: darkblue;
+	stroke: none;
+	width: 10px;
+}
